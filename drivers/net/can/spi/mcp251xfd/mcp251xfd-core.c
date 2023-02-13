@@ -1073,10 +1073,12 @@ static int mcp251xfd_chip_interrupts_disable(const struct mcp251xfd_priv *priv)
 static int mcp251xfd_chip_stop(struct mcp251xfd_priv *priv,
 			       const enum can_state state)
 {
+	print("__________In the mcp251xfd_chip_stop function____________");
 	priv->can.state = state;
 
 	mcp251xfd_chip_interrupts_disable(priv);
 	mcp251xfd_chip_rx_int_disable(priv);
+	print("__________Returning in Next line____________");
 	return mcp251xfd_chip_set_mode(priv, MCP251XFD_REG_CON_MODE_SLEEP);
 }
 
@@ -1085,41 +1087,56 @@ static int mcp251xfd_chip_start(struct mcp251xfd_priv *priv)
 	int err;
 
 	err = mcp251xfd_chip_softreset(priv);
-	if (err)
-		goto out_chip_stop;
+	print("_______Initialized chip softreset_______");
+	if (err){
+		print("_________Errot Chip Softreset________");
+		goto out_chip_stop;}
 
 	err = mcp251xfd_chip_clock_init(priv);
-	if (err)
-		goto out_chip_stop;
+	print("_________Initialized chip clock init________");
+	if (err){
+		print("_________Error Chip clock init________");
+		goto out_chip_stop;}
 
 	err = mcp251xfd_set_bittiming(priv);
-	if (err)
-		goto out_chip_stop;
+	print("_______Initialized set bitmitting_________");
+	if (err){
+		print("_______Error set bitmitting_________");
+		goto out_chip_stop;}
 
 	err = mcp251xfd_chip_rx_int_enable(priv);
-	if (err)
-		goto out_chip_stop;
+	print("_______Initialized chip rx int enable_________");
+	if (err){
+		print("_______Error chip rx int enable_________");
+		goto out_chip_stop;}
 
 	err = mcp251xfd_chip_ecc_init(priv);
-	if (err)
-		goto out_chip_stop;
+	print("_______Initialized chip ecc init_________");
+	if (err){
+		print("_______Error chip ecc init_________");
+		goto out_chip_stop;}
 
 	mcp251xfd_ring_init(priv);
-
+	print("_______Called mcp251xfd_ring_init Line 1117_________");
 	err = mcp251xfd_chip_fifo_init(priv);
-	if (err)
-		goto out_chip_stop;
+	print("_______Initialized chip fifo init_________");
+	if (err) {
+		print("_______Error chip fifo init_________");
+		goto out_chip_stop;}
 
 	priv->can.state = CAN_STATE_ERROR_ACTIVE;
 
 	err = mcp251xfd_chip_set_normal_mode(priv);
-	if (err)
-		goto out_chip_stop;
+	print("_______Initialized chip set normal mode_________");
+	if (err) {
+		print("_______Error chip set normal mode_________");
+		goto out_chip_stop;}
 
 	return 0;
 
  out_chip_stop:
 	mcp251xfd_dump(priv);
+	print("_______Calling the mcp251xfd_chip_stop in the next line_________");
 	mcp251xfd_chip_stop(priv, CAN_STATE_STOPPED);
 
 	return err;
